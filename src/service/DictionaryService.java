@@ -1,19 +1,17 @@
 package service;
 
-import entry.DictionaryEntry;
-
-import java.util.List;
+import java.util.Map;
 
 /**
  * Интерфейс сервиса словаря
  */
 public interface DictionaryService {
 
-    List<DictionaryEntry> readEntries();
+    Map<String, String> readEntries();
 
     void addEntry(String key, String value);
 
     void deleteEntry(String key);
 
-    DictionaryEntry searchEntry(String key);
+    String searchEntry(String key);
 }

@@ -1,23 +1,21 @@
 package service;
 
-import entry.DictionaryEntry;
 import validator.DictionaryValidator;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Класс служит для работы со словарем в файле
  */
 public class FileDictionaryService implements DictionaryService {
-    private Path filePath;
-    private DictionaryValidator validator;
-    private List<DictionaryEntry> entries;
+    private final Path filePath;
+    private final DictionaryValidator validator;
+    private final Map<String, String> entries;
 
     public FileDictionaryService(Path filePath, DictionaryValidator validator) {
         this.filePath = filePath;
@@ -25,10 +23,9 @@ public class FileDictionaryService implements DictionaryService {
         this.entries = loadEntriesFromFile();
     }
 
-    private List<DictionaryEntry> loadEntriesFromFile() {
-        List<DictionaryEntry> loadedEntries = new ArrayList<>();
+    private Map<String, String> loadEntriesFromFile() {
+        Map<String, String> loadedEntries = new HashMap<>();
         if (Files.exists(filePath)) {
-
             try (BufferedReader reader = Files.newBufferedReader(filePath)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -36,7 +33,7 @@ public class FileDictionaryService implements DictionaryService {
                     if (parts.length == 2) {
                         String key = parts[0].trim();
                         String value = parts[1].trim();
-                        loadedEntries.add(new DictionaryEntry(key, value));
+                        loadedEntries.put(key, value);
                     }
                 }
             } catch (IOException e) {
@@ -48,7 +45,7 @@ public class FileDictionaryService implements DictionaryService {
 
     private void saveEntriesToFile() {
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-            for (DictionaryEntry entry : entries) {
+            for (Map.Entry<String, String> entry : entries.entrySet()) {
                 writer.write(entry.getKey() + " - " + entry.getValue());
                 writer.newLine();
             }
@@ -58,14 +55,14 @@ public class FileDictionaryService implements DictionaryService {
     }
 
     @Override
-    public List<DictionaryEntry> readEntries() {
-        return new ArrayList<>(entries);
+    public Map<String, String> readEntries() {
+        return new HashMap<>(entries);
     }
 
     @Override
     public void addEntry(String key, String value) {
         if (validator.isValidKey(key)) {
-            entries.add(new DictionaryEntry(key, value));
+            entries.put(key, value);
             saveEntriesToFile();
         } else {
             throw new IllegalArgumentException("\n!!!Недопустимый формат ключа!!!");
@@ -74,15 +71,16 @@ public class FileDictionaryService implements DictionaryService {
 
     @Override
     public void deleteEntry(String key) {
-        entries.removeIf(entry -> entry.getKey().equals(key));
-        saveEntriesToFile();
+        if (entries.containsKey(key)) {
+            entries.remove(key);
+            saveEntriesToFile();
+        } else {
+            System.out.println("Ключ не найден.");
+        }
     }
 
     @Override
-    public DictionaryEntry searchEntry(String key) {
-        return entries.stream()
-                .filter(entry -> entry.getKey().equals(key))
-                .findFirst()
-                .orElse(null);
+    public String searchEntry(String key) {
+        return entries.get(key);
     }
 }

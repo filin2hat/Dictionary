@@ -1,18 +1,13 @@
 package app;
 
-import entry.DictionaryEntry;
-import exception.MenuInputException;
 import service.DictionaryService;
 import service.FileDictionaryService;
 import validator.FiveDigitValidator;
 import validator.FourLetterValidator;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.InputMismatchException;
-import java.util.List;
+import java.nio.file.*;
+import java.util.Map;
 import java.util.Scanner;
 
 public class DictionaryApp {
@@ -21,8 +16,8 @@ public class DictionaryApp {
     private static final Path FIVE_DIGIT_DICTIONARY_PATH = SRC_DIRECTORY.resolve("fiveDigitDictionary.txt");
 
     private DictionaryService currentDictionary;
-    private final DictionaryService fourLetterDictionary;
-    private final DictionaryService fiveDigitDictionary;
+    private DictionaryService fourLetterDictionary;
+    private DictionaryService fiveDigitDictionary;
 
     public DictionaryApp() {
         initializeDictionaryFiles();
@@ -38,119 +33,96 @@ public class DictionaryApp {
         );
     }
 
-    /**
-     * Запускает приложение, которое предлагает пользователю выбор между
-     * двумя словарями (4-буквенными ключами и 5-цифровыми ключами). Затем
-     * запускается меню, которое позволяет пользователю просматривать,
-     * добавлять, удалять и находить записи в выбранном словаре.
-     */
+    private void initializeDictionaryFiles() {
+        try {
+            if (Files.notExists(SRC_DIRECTORY)) {
+                Files.createDirectory(SRC_DIRECTORY);
+            }
+
+            if (Files.notExists(FOUR_LETTER_DICTIONARY_PATH)) {
+                Files.createFile(FOUR_LETTER_DICTIONARY_PATH);
+            }
+
+            if (Files.notExists(FIVE_DIGIT_DICTIONARY_PATH)) {
+                Files.createFile(FIVE_DIGIT_DICTIONARY_PATH);
+            }
+        } catch (IOException e) {
+            System.err.println("Ошибка при создании директории или файлов словарей: " + e.getMessage());
+        }
+    }
+
     public void start() {
         var scanner = new Scanner(System.in);
         var running = true;
 
         while (running) {
-            try {
-                System.out.println("\nВыберите словарь:");
-                System.out.println("1. Словарь с 4-буквенными ключами (пример: \"test - тест\")");
-                System.out.println("2. Словарь с 5-цифровыми ключами (пример: \"12345 - один два три четыре пять\")");
-                System.out.println("0. Выход");
-                System.out.print("\nВаш выбор: ");
-                int choice = scanner.nextInt();
-                scanner.nextLine();
+            System.out.println("Выберите словарь:");
+            System.out.println("1. Словарь с 4-буквенными ключами");
+            System.out.println("2. Словарь с 5-цифровыми ключами");
+            System.out.println("0. Выход");
+            System.out.print("Ваш выбор: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
 
-                switch (choice) {
-                    case 1 -> {
-                        currentDictionary = fourLetterDictionary;
-                        menu(scanner);
-                    }
-                    case 2 -> {
-                        currentDictionary = fiveDigitDictionary;
-                        menu(scanner);
-                    }
-                    case 0 -> running = false;
-                    default -> throw new MenuInputException("!!! Неверный выбор, попробуйте снова. !!!");
+            switch (choice) {
+                case 1 -> {
+                    currentDictionary = fourLetterDictionary;
+                    menu(scanner);
                 }
-            } catch (InputMismatchException e) {
-                System.out.println("!!! Ошибка: введите число (0, 1 или 2)!!!");
-                scanner.nextLine();
-            } catch (Exception e) {
-                System.out.println("!!!Произошла ошибка: " + e.getMessage() + "\n");
+                case 2 -> {
+                    currentDictionary = fiveDigitDictionary;
+                    menu(scanner);
+                }
+                case 0 -> running = false;
+                default -> System.out.println("Неверный выбор, попробуйте снова.");
             }
         }
         scanner.close();
-    }
-
-    private void initializeDictionaryFiles() {
-        try {
-            if (Files.notExists(SRC_DIRECTORY)) {
-                Files.createDirectory(SRC_DIRECTORY);
-                System.out.println("Создана директория: " + SRC_DIRECTORY + "\n");
-            }
-
-            if (Files.notExists(FOUR_LETTER_DICTIONARY_PATH)) {
-                Files.createFile(FOUR_LETTER_DICTIONARY_PATH);
-                System.out.println("\nСоздан файл словаря: " + FOUR_LETTER_DICTIONARY_PATH);
-            }
-
-            if (Files.notExists(FIVE_DIGIT_DICTIONARY_PATH)) {
-                Files.createFile(FIVE_DIGIT_DICTIONARY_PATH);
-                System.out.println("\nСоздан файл словаря: " + FIVE_DIGIT_DICTIONARY_PATH);
-            }
-        } catch (IOException e) {
-            System.err.println("\n!!!Ошибка при создании директории или файлов словарей: " + e.getMessage());
-        }
     }
 
     private void menu(Scanner scanner) {
         boolean inMenu = true;
 
         while (inMenu) {
-            try {
-                System.out.println("\nМеню:");
-                System.out.println("1. Просмотреть содержимое словаря");
-                System.out.println("2. Найти запись по ключу");
-                System.out.println("3. Добавить запись");
-                System.out.println("4. Удалить запись");
-                System.out.println("0. Назад");
-                System.out.print("\nВаш выбор: ");
-                int choice = scanner.nextInt();
-                scanner.nextLine();
+            System.out.println("\nМеню:");
+            System.out.println("1. Просмотреть содержимое словаря");
+            System.out.println("2. Найти запись по ключу");
+            System.out.println("3. Добавить запись");
+            System.out.println("4. Удалить запись");
+            System.out.println("0. Назад");
+            System.out.print("Ваш выбор: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
 
-                switch (choice) {
-                    case 1 -> displayEntries();
-                    case 2 -> searchEntry(scanner);
-                    case 3 -> addEntry(scanner);
-                    case 4 -> deleteEntry(scanner);
-                    case 0 -> inMenu = false;
-                    default -> throw new MenuInputException("\n!!!Ошибка: введите число от 0 до 4!!!");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("\n!!!Ошибка: введите число от 0 до 4!!!");
-                scanner.nextLine();
-            } catch (Exception e) {
-                System.out.println("Произошла ошибка: " + e.getMessage());
+            switch (choice) {
+                case 1 -> displayEntries();
+                case 2 -> searchEntry(scanner);
+                case 3 -> addEntry(scanner);
+                case 4 -> deleteEntry(scanner);
+                case 0 -> inMenu = false;
+                default -> System.out.println("Неверный выбор, попробуйте снова.");
             }
         }
     }
 
     private void displayEntries() {
-        List<DictionaryEntry> entries = currentDictionary.readEntries();
+        Map<String, String> entries = currentDictionary.readEntries();
         if (entries.isEmpty()) {
-            System.out.println("\nСловарь пуст!");
+            System.out.println("Словарь пуст.");
         } else {
-            System.out.println("\nСодержимое словаря:");
-            entries.forEach(System.out::println);
+            System.out.println("Содержимое словаря:");
+            entries.forEach((key, value) -> System.out.println(key + " - " + value));
         }
     }
 
     private void searchEntry(Scanner scanner) {
-        System.out.print("\nВведите ключ для поиска: ");
+        System.out.print("Введите ключ для поиска: ");
         String key = scanner.nextLine();
-        DictionaryEntry entry = currentDictionary.searchEntry(key);
-        if (entry != null) {
-            System.out.println("\nНайдена запись: " + entry);
+        String value = currentDictionary.searchEntry(key);
+        if (value != null) {
+            System.out.println("Найдена запись: " + key + " - " + value);
         } else {
-            System.out.println("\nЗапись с ключом '" + key + "' не найдена.");
+            System.out.println("Запись с ключом '" + key + "' не найдена.");
         }
     }
 
@@ -162,16 +134,16 @@ public class DictionaryApp {
 
         try {
             currentDictionary.addEntry(key, value);
-            System.out.println("\nЗапись добавлена!");
+            System.out.println("Запись добавлена.");
         } catch (IllegalArgumentException e) {
-            System.out.println("\nОшибка: " + e.getMessage());
+            System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
     private void deleteEntry(Scanner scanner) {
-        System.out.print("\nВведите ключ для удаления: ");
+        System.out.print("Введите ключ для удаления: ");
         String key = scanner.nextLine();
         currentDictionary.deleteEntry(key);
-        System.out.println("\nЗапись удалена!");
+        System.out.println("Запись удалена.");
     }
 }
