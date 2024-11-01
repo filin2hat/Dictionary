@@ -45,12 +45,16 @@ public class FileDictionaryService implements DictionaryService {
 
     private void saveEntriesToFile() {
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-            for (Map.Entry<String, String> entry : entries.entrySet()) {
-                writer.write(entry.getKey() + " - " + entry.getValue());
-                writer.newLine();
-            }
+            entries.forEach((key, value) -> {
+                try {
+                    writer.write(key + " - " + value);
+                    writer.newLine();
+                } catch (IOException e) {
+                    System.err.println("\n!!!Ошибка при записи файла: " + e.getMessage());
+                }
+            });
         } catch (IOException e) {
-            System.err.println("\n!!!Ошибка при записи файла: " + e.getMessage());
+            System.err.println("\n!!!Ошибка при открытии файла для записи: " + e.getMessage());
         }
     }
 

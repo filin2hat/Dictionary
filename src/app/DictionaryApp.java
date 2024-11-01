@@ -61,20 +61,26 @@ public class DictionaryApp {
             System.out.println("2. Словарь с 5-цифровыми ключами");
             System.out.println("0. Выход");
             System.out.print("Ваш выбор: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
 
-            switch (choice) {
-                case 1 -> {
-                    currentDictionary = fourLetterDictionary;
-                    menu(scanner);
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (choice) {
+                    case 1 -> {
+                        currentDictionary = fourLetterDictionary;
+                        menu(scanner);
+                    }
+                    case 2 -> {
+                        currentDictionary = fiveDigitDictionary;
+                        menu(scanner);
+                    }
+                    case 0 -> running = false;
+                    default -> System.out.println("Неверный выбор, попробуйте снова.");
                 }
-                case 2 -> {
-                    currentDictionary = fiveDigitDictionary;
-                    menu(scanner);
-                }
-                case 0 -> running = false;
-                default -> System.out.println("Неверный выбор, попробуйте снова.");
+            } catch (Exception e) {
+                System.out.println("Ошибка ввода! Пожалуйста, введите число.");
+                scanner.nextLine();
             }
         }
         scanner.close();
@@ -143,7 +149,11 @@ public class DictionaryApp {
     private void deleteEntry(Scanner scanner) {
         System.out.print("Введите ключ для удаления: ");
         String key = scanner.nextLine();
-        currentDictionary.deleteEntry(key);
-        System.out.println("Запись удалена.");
+        if (currentDictionary.readEntries().containsKey(key)) {
+            currentDictionary.deleteEntry(key);
+            System.out.println("Запись удалена.");
+        } else {
+            System.out.println("Запись с таким ключом не найдена.");
+        }
     }
 }
