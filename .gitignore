@@ -29,3 +29,5 @@ bin/
 .DS_Store
 /Dictionary.iml
 /.idea/
+/src/fourLetterDictionary.txt
+/src/fiveDigitDictionary.txt
