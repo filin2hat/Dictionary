@@ -1,16 +1,14 @@
 package service;
 
+import util.FileUtils;
 import validator.DictionaryValidator;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
+
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Класс служит для работы со словарем в файле
+ * Класс для работы со словарем в файле.
  */
 public class FileDictionaryService implements DictionaryService {
     private final Path filePath;
@@ -20,42 +18,7 @@ public class FileDictionaryService implements DictionaryService {
     public FileDictionaryService(Path filePath, DictionaryValidator validator) {
         this.filePath = filePath;
         this.validator = validator;
-        this.entries = loadEntriesFromFile();
-    }
-
-    private Map<String, String> loadEntriesFromFile() {
-        Map<String, String> loadedEntries = new HashMap<>();
-        if (Files.exists(filePath)) {
-            try (BufferedReader reader = Files.newBufferedReader(filePath)) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String[] parts = line.split(" - ", 2);
-                    if (parts.length == 2) {
-                        String key = parts[0].trim();
-                        String value = parts[1].trim();
-                        loadedEntries.put(key, value);
-                    }
-                }
-            } catch (IOException e) {
-                System.err.println("\n!!!Ошибка при чтении файла: " + e.getMessage());
-            }
-        }
-        return loadedEntries;
-    }
-
-    private void saveEntriesToFile() {
-        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-            entries.forEach((key, value) -> {
-                try {
-                    writer.write(key + " - " + value);
-                    writer.newLine();
-                } catch (IOException e) {
-                    System.err.println("\n!!!Ошибка при записи файла: " + e.getMessage());
-                }
-            });
-        } catch (IOException e) {
-            System.err.println("\n!!!Ошибка при открытии файла для записи: " + e.getMessage());
-        }
+        this.entries = FileUtils.readEntriesFromFile(filePath);
     }
 
     @Override
@@ -67,7 +30,8 @@ public class FileDictionaryService implements DictionaryService {
     public void addEntry(String key, String value) {
         if (validator.isValidKey(key)) {
             entries.put(key, value);
-            saveEntriesToFile();
+            FileUtils.writeEntriesToFile(filePath, entries);
+            System.out.println("Запись добавлена.");
         } else {
             throw new IllegalArgumentException("\n!!!Недопустимый формат ключа!!!");
         }
@@ -77,9 +41,10 @@ public class FileDictionaryService implements DictionaryService {
     public void deleteEntry(String key) {
         if (entries.containsKey(key)) {
             entries.remove(key);
-            saveEntriesToFile();
+            FileUtils.writeEntriesToFile(filePath, entries);
+            System.out.println("Запись удалена.");
         } else {
-            System.out.println("Ключ не найден.");
+            System.out.println("Запись с таким ключом не найдена.");
         }
     }
 
