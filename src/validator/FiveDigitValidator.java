@@ -1,5 +1,8 @@
 package validator;
 
+/**
+ * Валидатор для ключей из 5 цифр
+ */
 public class FiveDigitValidator implements DictionaryValidator {
     @Override
     public boolean isValidKey(String key) {

@@ -4,6 +4,9 @@ import entry.DictionaryEntry;
 
 import java.util.List;
 
+/**
+ * Интерфейс сервиса словаря
+ */
 public interface DictionaryService {
 
     List<DictionaryEntry> readEntries();
