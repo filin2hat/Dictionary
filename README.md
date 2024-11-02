@@ -20,7 +20,6 @@
 - `Main.java` - основной класс приложения, запускающий программу.
 - `src/app/DictionaryApp.java` - класс приложения, обеспечивающий интерфейс взаимодействия с пользователем.
 - `src/app/command/DictionaryCommand.java` - интерфейс команд, которые можно выполнить в приложении.
-- `src/exception/MenuInputException.java` - класс исключений для обработки ошибок ввода пользователем.
 - `src/service/FileDictionaryService.java` - класс для работы с файлами словарей.
 - `src/validator/FourLetterValidator.java` - валидатор для ключей из 4 латинских букв.
 - `src/validator/FiveDigitValidator.java` - валидатор для ключей из 5 цифр.
