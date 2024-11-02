@@ -9,6 +9,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FileUtils {
+    private static volatile FileUtils instance;
+
+    private FileUtils() {
+    }
+
+    public static FileUtils getInstance() {
+        if (instance == null) {
+            synchronized (FileUtils.class) {
+                if (instance == null) {
+                    instance = new FileUtils();
+                }
+            }
+        }
+        return instance;
+    }
 
     /**
      * Чтение записей из файла в Map.
@@ -40,7 +55,7 @@ public class FileUtils {
      * Запись записей из Map в файл.
      *
      * @param filePath путь к файлу словаря.
-     * @param entries Map с записями для записи.
+     * @param entries  Map с записями для записи.
      */
     public static void writeEntriesToFile(Path filePath, Map<String, String> entries) {
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
